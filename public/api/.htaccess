@@ -1,0 +1,13 @@
+# Kriva API directory — only contact.php is reachable.
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+  <FilesMatch "^(?!contact\.php$).+$">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set Cache-Control "no-store, max-age=0"
+  Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>

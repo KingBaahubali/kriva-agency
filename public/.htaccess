@@ -1,0 +1,112 @@
+# =============================================================================
+#  Kriva — Apache configuration for GoDaddy cPanel (shared / Linux hosting)
+#  Output path: dist/.htaccess  (upload together with index.html)
+#  Every block is wrapped in <IfModule> so a missing module never causes a 500.
+# =============================================================================
+
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+ServerSignature Off
+
+# ---- MIME types ------------------------------------------------------------
+AddType image/svg+xml                 .svg
+AddType application/manifest+json     .webmanifest
+AddType font/woff2                    .woff2
+AddType application/javascript        .js .mjs
+AddDefaultCharset UTF-8
+AddCharset UTF-8 .html .css .js .json .svg .webmanifest .txt .xml
+
+# ---- Routing ---------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1. Force HTTPS. Also honours X-Forwarded-Proto for GoDaddy plans that
+  #    terminate TLS at a proxy (prevents redirect loops).
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+
+  # Optional — canonicalise www → apex. Uncomment once DNS for both is live.
+  # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  # RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301,NE]
+
+  # 2. Never rewrite the PHP API.
+  RewriteRule ^api/ - [L]
+
+  # 3. Serve real files and directories untouched.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 4. Deep-link repair. The build uses a relative base ('./'), so a refresh on
+  #    a nested virtual path (/a/b) requests /a/assets/x.js. Map it back to the
+  #    real file instead of serving index.html as JavaScript.
+  RewriteRule ^.+/((?:assets|brand|api)/.+)$ $1 [L]
+
+  # 5. Missing hashed assets → real 404 (never cache HTML as JS/CSS).
+  RewriteRule ^(?:assets|brand)/ - [R=404,L]
+
+  # 6. SPA fallback — every other virtual path renders the app.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# ---- Compression -------------------------------------------------------------
+<IfModule mod_brotli.c>
+  AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/xml application/javascript application/json application/xml image/svg+xml application/manifest+json
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/javascript application/x-javascript application/json application/xml application/rss+xml image/svg+xml image/x-icon application/manifest+json font/ttf font/otf
+  <IfModule mod_headers.c>
+    Header append Vary Accept-Encoding
+  </IfModule>
+</IfModule>
+
+# ---- Browser caching ---------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault                              "access plus 1 month"
+  ExpiresByType text/html                     "access plus 0 seconds"
+  ExpiresByType application/json              "access plus 0 seconds"
+  ExpiresByType application/manifest+json     "access plus 1 week"
+  ExpiresByType text/css                      "access plus 1 year"
+  ExpiresByType application/javascript        "access plus 1 year"
+  ExpiresByType image/svg+xml                 "access plus 1 year"
+  ExpiresByType image/png                     "access plus 1 year"
+  ExpiresByType image/webp                    "access plus 1 year"
+  ExpiresByType image/avif                    "access plus 1 year"
+  ExpiresByType image/x-icon                  "access plus 1 year"
+  ExpiresByType font/woff2                    "access plus 1 year"
+  ExpiresByType font/woff                     "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Static assets: 1 year, immutable (Vite fingerprints JS/CSS/font filenames).
+  <FilesMatch "\.(?:js|mjs|css|woff2?|svg|png|webp|avif|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # App shell: always revalidate so new deploys are picked up instantly.
+  <FilesMatch "^(?:index\.html|site\.webmanifest|robots\.txt|sitemap\.xml)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+
+  # Security headers
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Strict-Transport-Security "max-age=31536000" env=HTTPS
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+  Header unset X-Powered-By
+</IfModule>
+
+# ---- Block access to dotfiles and source artefacts ---------------------------
+<FilesMatch "^\.(?!well-known)|\.(?:map|md|log|ts|tsx|lock)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+</FilesMatch>

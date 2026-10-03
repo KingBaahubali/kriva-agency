@@ -1,0 +1,193 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+/* ------------------------------------------------------------------ Base -- */
+@layer base {
+  :root {
+    color-scheme: dark;
+    --header-h: 72px;
+    --ease-kinetic: cubic-bezier(0.16, 1, 0.3, 1);
+    scroll-padding-top: calc(var(--header-h) + 24px);
+  }
+
+  html {
+    background: var(--color-basalt);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--color-ink-200);
+    background: var(--color-basalt);
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    color: var(--color-ink-100);
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-basalt);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  /* Section headings receive programmatic focus after anchor navigation. */
+  [tabindex="-1"]:focus { outline: none; }
+
+  input, textarea, select, button { font: inherit; }
+
+  /* Lenis */
+  html.lenis, html.lenis body { height: auto; }
+  .lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+  .lenis [data-lenis-prevent] { overscroll-behavior: contain; }
+  .lenis.lenis-smooth iframe { pointer-events: none; }
+
+  dialog::backdrop {
+    background: rgb(6 7 10 / 0.72);
+    backdrop-filter: blur(6px);
+  }
+}
+
+/* ------------------------------------------------------------- Utilities -- */
+@utility shell {
+  width: 100%;
+  max-width: var(--container-shell, 1320px);
+  margin-inline: auto;
+  padding-inline: var(--spacing-gutter);
+}
+
+@utility surface {
+  background-color: var(--color-graphite);
+  border: 1px solid var(--color-line);
+  box-shadow: var(--shadow-specular);
+}
+
+@utility surface-raised {
+  background-color: var(--color-graphite-raised);
+  border: 1px solid var(--color-line);
+  box-shadow: var(--shadow-specular);
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-300);
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+@utility hairline-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+@utility sr-only-focusable {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  &:focus-visible {
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+}
+
+/* ------------------------------------------------------------ Components -- */
+@layer components {
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background-image: url("/brand/noise.svg");
+    background-size: 240px 240px;
+    opacity: 0.045;
+    mix-blend-mode: overlay;
+  }
+
+  /* Form controls: error state follows :user-invalid timing + aria-invalid */
+  .field-control {
+    width: 100%;
+    min-height: 48px;
+    border-radius: var(--radius-md);
+    background: var(--color-basalt);
+    border: 1px solid var(--color-line-strong);
+    color: var(--color-ink-100);
+    padding: 0.75rem 0.9rem;
+    font-size: 1rem;
+    transition: border-color 160ms var(--ease-kinetic), box-shadow 160ms var(--ease-kinetic);
+  }
+  .field-control::placeholder { color: var(--color-ink-400); }
+  .field-control:hover { border-color: rgb(255 255 255 / 0.22); }
+  .field-control:focus-visible {
+    outline: none;
+    border-color: var(--color-signal);
+    box-shadow: 0 0 0 3px rgb(255 75 31 / 0.25);
+  }
+  .field-control[aria-invalid="true"] {
+    border-color: var(--color-status-error);
+  }
+  .field-control[aria-invalid="true"]:focus-visible {
+    box-shadow: 0 0 0 3px rgb(255 107 107 / 0.25);
+  }
+}
+
+@media (pointer: coarse) {
+  .field-control { min-height: 52px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(61 220 151 / 0.55); }
+  50% { box-shadow: 0 0 0 5px rgb(61 220 151 / 0); }
+}
+.pulse-dot { animation: pulse-dot 2.4s var(--ease-kinetic) infinite; }
+
+@keyframes pulse-signal {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(255 75 31 / 0.55); }
+  50% { box-shadow: 0 0 0 5px rgb(255 75 31 / 0); }
+}
+.pulse-signal { animation: pulse-signal 2.4s var(--ease-kinetic) infinite; }
+
+@keyframes faq-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.faq-answer { animation: faq-in 420ms var(--ease-kinetic) both; }

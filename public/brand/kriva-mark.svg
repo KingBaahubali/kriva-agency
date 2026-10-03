@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27 32" width="54" height="64" role="img" aria-labelledby="kriva-mark-title">
+  <title id="kriva-mark-title">Kriva monogram</title>
+  <g fill="#F4F5F7">
+    <rect x="4" y="4" width="6" height="24"/>
+    <polygon points="12,8 16,4 23,4 12,15"/>
+    <polygon points="12,24 16,28 23,28 12,17"/>
+  </g>
+  <polygon points="14,16 16,14 18,16 16,18" fill="#FF4B1F"/>
+</svg>

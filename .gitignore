@@ -1,0 +1,6 @@
+node_modules
+dist
+kriva-godaddy-deploy.zip
+.DS_Store
+*.log
+.qa

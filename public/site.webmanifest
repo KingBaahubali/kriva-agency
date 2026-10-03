@@ -1,0 +1,14 @@
+{
+  "name": "Kriva — Product Engineering & Cloud Infrastructure",
+  "short_name": "Kriva",
+  "description": "Senior-led sprint pods building cloud-native, AI-ready platforms for US engineering teams.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0A0C10",
+  "theme_color": "#0A0C10",
+  "icons": [
+    { "src": "brand/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "brand/app-icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
